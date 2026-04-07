@@ -44,6 +44,15 @@ export const PatientRegistrationPage: React.FC = () => {
     }).catch(err => {
       console.error('Failed to fetch doctors', err);
     });
+
+    // Fetch next OP number
+    api.get('/patients/next-op-no').then(res => {
+      if (res.data.opNo) {
+        setFormData(prev => ({ ...prev, opNo: res.data.opNo }));
+      }
+    }).catch(err => {
+      console.error('Failed to fetch next OP No', err);
+    });
   }, []);
 
   const calculateAge = (dob: string) => {
@@ -121,7 +130,7 @@ export const PatientRegistrationPage: React.FC = () => {
           doctorId: submissionData.doctorId,
           date: new Date().toISOString(),
           status: 'WAITING',
-          reason: 'Initial Registration Visit',
+          reason: 'Initial Visit',
           duration: 30
         });
       } catch (apptErr) {
@@ -157,7 +166,7 @@ export const PatientRegistrationPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => navigate('/patients/revisit')}
+            onClick={() => navigate('/patients/list')}
             className="flex items-center gap-2 px-4 py-2 border rounded-lg text-xs font-bold hover:bg-accent transition-all bg-card shadow-sm"
           >
             <List size={16} />
@@ -265,10 +274,12 @@ export const PatientRegistrationPage: React.FC = () => {
               <div className="sm:col-span-2 space-y-1 pt-1">
                 <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">OP Number</label>
                 <input
-                  readOnly
                   type="text"
-                  placeholder="Auto-assigned"
-                  className="w-full px-3 py-1.5 border rounded-lg bg-muted/20 text-xs italic text-muted-foreground/60 border-dashed"
+                  name="opNo"
+                  value={formData.opNo}
+                  onChange={handleChange}
+                  placeholder="Enter OP Number (or leave for auto)"
+                  className="w-full px-3 py-1.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                 />
               </div>
             </div>

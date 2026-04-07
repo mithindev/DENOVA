@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listPatients, getPatient, createPatient, updatePatient, deletePatient } from './patient.controller';
+import { listPatients, getPatient, createPatient, updatePatient, deletePatient, getNextOpNo } from './patient.controller';
 import { createPatientSchema, updatePatientSchema } from './patient.schema';
 import { validate } from '../../middlewares/validate';
 import { authenticate } from '../../middlewares/authenticate';
@@ -10,6 +10,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', listPatients);
+router.get('/next-op-no', getNextOpNo);
 router.get('/:id', getPatient);
 router.post('/', validate(createPatientSchema), createPatient);
 router.patch('/:id', validate(updatePatientSchema), updatePatient);

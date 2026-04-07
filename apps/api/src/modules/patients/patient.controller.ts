@@ -2,6 +2,12 @@ import { Request, Response } from 'express';
 import { PatientService } from './patient.service';
 import { AppError } from '../../lib/AppError';
 
+export const getNextOpNo = async (req: Request, res: Response) => {
+  if (!req.user) throw new AppError('Unauthorized', 401);
+  const opNo = await PatientService.getNextOpNo(req.user.clinicId);
+  res.json({ opNo });
+};
+
 export const listPatients = async (req: Request, res: Response) => {
   if (!req.user) throw new AppError('Unauthorized', 401);
   

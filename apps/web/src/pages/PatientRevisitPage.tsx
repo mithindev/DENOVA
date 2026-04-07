@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, Search, Phone, Calendar, ChevronRight, UserRoundSearch, ArrowLeft, MoreHorizontal, User, MapPin, Activity, Clock, UserPlus, Save, Loader2 } from 'lucide-react';
+import { Users, Search, Phone, Calendar, UserRoundSearch, ArrowLeft, User, MapPin, Activity, Clock, UserPlus, Save, Loader2 } from 'lucide-react';
 import api from '../api/api.client';
 import { formatDate, cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -32,9 +32,11 @@ interface Patient {
   id: string;
   opNo: string | null;
   name: string;
+  age: number | null;
+  gender: string | null;
+  bloodGroup: string | null;
   phone: string | null;
   mobile: string | null;
-  gender: string | null;
   createdAt: string;
 }
 
@@ -114,7 +116,7 @@ export const PatientRevisitPage: React.FC = () => {
         doctorId: null, // User can assign later in appointments page
         date: new Date().toISOString(),
         status: 'WAITING',
-        reason: 'Revisit Checklist',
+        reason: 'Revisit',
         duration: 30
       });
       alert('Patient added to appointment list (Waiting)');
@@ -400,56 +402,41 @@ export const PatientRevisitPage: React.FC = () => {
             <table className="w-full text-sm">
               <thead className="bg-muted/30 border-b">
                 <tr>
-                  {['OP No', 'Patient Name', 'Contact Info', 'Gender', 'Record Date', ''].map((h) => (
-                    <th key={h} className="px-6 py-4 text-left font-bold text-muted-foreground text-[10px] uppercase tracking-widest">{h}</th>
-                  ))}
+                  <th className="px-6 py-4 text-left font-bold text-muted-foreground text-[10px] uppercase tracking-widest">No.</th>
+                  <th className="px-6 py-4 text-left font-bold text-muted-foreground text-[10px] uppercase tracking-widest">OP.No</th>
+                  <th className="px-6 py-4 text-left font-bold text-muted-foreground text-[10px] uppercase tracking-widest">Name</th>
+                  <th className="px-6 py-4 text-left font-bold text-muted-foreground text-[10px] uppercase tracking-widest">Age</th>
+                  <th className="px-6 py-4 text-left font-bold text-muted-foreground text-[10px] uppercase tracking-widest">Sex</th>
+                  <th className="px-6 py-4 text-left font-bold text-muted-foreground text-[10px] uppercase tracking-widest">Bg Group</th>
+                  <th className="px-6 py-4 text-left font-bold text-muted-foreground text-[10px] uppercase tracking-widest">Mobile</th>
+                  <th className="px-6 py-4 text-left font-bold text-muted-foreground text-[10px] uppercase tracking-widest">Reg Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {patients.map((p) => (
+                {patients.map((p, index) => (
                   <tr 
                     key={p.id} 
                     onClick={() => selectPatient(p.id)}
                     className="hover:bg-accent/50 transition-colors cursor-pointer group"
                   >
+                    <td className="px-6 py-4 font-medium text-muted-foreground">{index + 1}</td>
                     <td className="px-6 py-4">
-                      <span className="font-mono text-xs bg-muted px-2 py-1 rounded border">
-                        {p.opNo || 'NEW'}
+                      <span className="font-mono text-xs bg-muted border px-1.5 py-0.5 rounded text-foreground">
+                        {p.opNo || '—'}
                       </span>
                     </td>
+                    <td className="px-6 py-4 font-bold text-foreground group-hover:text-primary transition-colors">{p.name}</td>
+                    <td className="px-6 py-4 text-muted-foreground">{p.age || '—'}</td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-foreground group-hover:text-primary transition-colors">{p.name}</span>
-                        <span className="text-[10px] text-muted-foreground uppercase">{p.id.slice(0, 8)}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground">
-                      <div className="flex flex-col gap-1">
-                        <span className="flex items-center gap-1.5 font-bold text-foreground">
-                          <Phone size={12} className="text-primary" />
-                          {p.mobile || p.phone || '—'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={cn(
-                        "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                        p.gender === 'MALE' ? 'bg-blue-100 text-blue-700' : 
-                        p.gender === 'FEMALE' ? 'bg-pink-100 text-pink-700' : 
-                        'bg-slate-100 text-slate-700'
-                      )}>
+                      <span className={`text-[10px] font-bold uppercase ${
+                        p.gender === 'MALE' ? 'text-blue-600' : p.gender === 'FEMALE' ? 'text-pink-600' : 'text-slate-600'
+                      }`}>
                         {p.gender || '—'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-muted-foreground font-medium italic">
-                      {formatDate(p.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end text-primary opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all">
-                        <span className="text-xs font-bold mr-2 uppercase tracking-tight">Select</span>
-                        <ChevronRight size={16} />
-                      </div>
-                    </td>
+                    <td className="px-6 py-4 text-muted-foreground font-medium">{p.bloodGroup || '—'}</td>
+                    <td className="px-6 py-4 text-muted-foreground">{p.mobile || p.phone || '—'}</td>
+                    <td className="px-6 py-4 text-muted-foreground italic">{formatDate(p.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>

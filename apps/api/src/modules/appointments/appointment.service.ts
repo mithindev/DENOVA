@@ -120,14 +120,18 @@ export class AppointmentService {
     const patient = await prisma.patient.findFirst({ where: { id: patientId, clinicId } });
     if (!patient) throw new AppError('Patient not found.', 404);
 
-    return prisma.appointment.findMany({
+    const appts = await prisma.appointment.findMany({
       where: { patientId },
       orderBy: { date: 'desc' },
       include: {
+        patient: { select: { opNo: true } },
         doctor: { select: { id: true, name: true } },
-        treatments: { select: { id: true, name: true, diagnosis: true, treatmentDone: true }, take: 3 },
+        treatments: true,
+        prescriptions: true,
         _count: { select: { treatments: true, prescriptions: true } },
       },
     });
+
+    return appts.map(a => ({ ...a, opNo: a.patient.opNo }));
   }
 }

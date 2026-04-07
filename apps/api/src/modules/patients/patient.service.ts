@@ -2,6 +2,11 @@ import prisma from '../../services/db.service';
 import { AppError } from '../../lib/AppError';
 
 export class PatientService {
+  static async getNextOpNo(clinicId: string) {
+    const count = await prisma.patient.count({ where: { clinicId } });
+    return `OP-${(count + 1).toString().padStart(4, '0')}`;
+  }
+
   static async getAll(clinicId: string, query?: string, limit: number = 15) {
     const where: any = { clinicId };
     

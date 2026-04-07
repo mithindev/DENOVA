@@ -29,7 +29,9 @@ export const TreatmentsPage: React.FC = () => {
     clinicalDetails: '',
     appointmentNotes: ''
   });
-  const [prescriptions, setPrescriptions] = useState<PrescriptionRow[]>([]);
+  const [prescriptions, setPrescriptions] = useState<PrescriptionRow[]>([
+    { medicineName: '', totalTablets: 0, dosage: '', days: 0 }
+  ]);
 
   useEffect(() => {
     if (id) {
@@ -246,14 +248,14 @@ export const TreatmentsPage: React.FC = () => {
         {/* 3. Medicinal Advice */}
         <MedicinalAdviceSection 
           prescriptions={prescriptions}
-          onAddRow={() => setPrescriptions(p => [...p, { medicineName: '', totalTablets: 10, dosage: '', days: 5 }])}
+          onAddRow={() => setPrescriptions(p => [...p, { medicineName: '', totalTablets: 0, dosage: '', days: 0 }])}
           onRemoveRow={idx => setPrescriptions(p => p.filter((_, i) => i !== idx))}
           onChange={(idx, f, v) => {
             const next = [...prescriptions];
             (next[idx] as any)[f] = v;
             setPrescriptions(next);
           }}
-          onClearAll={() => setPrescriptions([])}
+          onClearAll={() => setPrescriptions([{ medicineName: '', totalTablets: 0, dosage: '', days: 0 }])}
           onPrint={handlePrint}
         />
 

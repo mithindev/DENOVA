@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const createTreatmentSchema = z.object({
   body: z.object({
     appointmentId: z.string(),
-    name: z.string().min(1),
+    name: z.string().optional().nullable(),
     toothNumber: z.string().optional().nullable(),
     notes: z.string().optional().nullable(),
     diagnosis: z.string().optional().nullable(),
@@ -26,7 +26,7 @@ export const bulkCreateTreatmentsSchema = z.object({
     appointmentId: z.string(),
     treatments: z.array(
       z.object({
-        name: z.string().min(1),
+        name: z.string().optional().nullable(),
         toothNumber: z.string().optional().nullable(),
         notes: z.string().optional().nullable(),
         diagnosis: z.string().optional().nullable(),
