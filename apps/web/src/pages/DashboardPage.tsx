@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Users, Calendar, ReceiptIndianRupee, Stethoscope } from 'lucide-react';
+import { Users, Calendar, Stethoscope } from 'lucide-react';
 import api from '../api/api.client';
 
 interface Stats {
   patients: number;
   todayAppointments: number;
-  pendingBills: number;
 }
 
 const StatCard: React.FC<{ icon: React.ElementType; label: string; value: string | number; color: string }> = ({
@@ -25,20 +24,18 @@ const StatCard: React.FC<{ icon: React.ElementType; label: string; value: string
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState<Stats>({ patients: 0, todayAppointments: 0, pendingBills: 0 });
+  const [stats, setStats] = useState<Stats>({ patients: 0, todayAppointments: 0 });
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [pRes, aRes, bRes] = await Promise.all([
+        const [pRes, aRes] = await Promise.all([
           api.get('/patients'),
           api.get('/appointments'),
-          api.get('/billing'),
         ]);
         const today = new Date().toDateString();
         const todayAppts = aRes.data.filter((a: any) => new Date(a.date).toDateString() === today);
-        const pending = bRes.data.filter((b: any) => b.status !== 'PAID');
-        setStats({ patients: pRes.data.length, todayAppointments: todayAppts.length, pendingBills: pending.length });
+        setStats({ patients: pRes.data.length, todayAppointments: todayAppts.length });
       } catch (err) { /* non-critical */ }
     };
     fetchStats();
@@ -56,7 +53,6 @@ export const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Users} label="Total Patients" value={stats.patients} color="bg-blue-500" />
         <StatCard icon={Calendar} label="Today's Appointments" value={stats.todayAppointments} color="bg-primary" />
-        <StatCard icon={ReceiptIndianRupee} label="Pending Bills" value={stats.pendingBills} color="bg-amber-500" />
         <StatCard icon={Stethoscope} label="Active Doctors" value="—" color="bg-green-500" />
       </div>
 
@@ -66,7 +62,6 @@ export const DashboardPage: React.FC = () => {
           {[
             { label: '+ New Patient', href: '/patients' },
             { label: '+ Book Appointment', href: '/appointments' },
-            { label: 'View Billing', href: '/billing' },
           ].map((a) => (
             <a key={a.href} href={a.href}
               className="px-4 py-2 bg-accent text-accent-foreground rounded-md text-sm font-semibold hover:bg-primary hover:text-primary-foreground transition-all">

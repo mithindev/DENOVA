@@ -11,7 +11,6 @@ import staffRoutes from './modules/staff/staff.routes';
 import patientRoutes from './modules/patients/patient.routes';
 import appointmentRoutes from './modules/appointments/appointment.routes';
 import treatmentRoutes from './modules/treatments/treatment.routes';
-import billingRoutes from './modules/billing/billing.routes';
 import logRoutes from './modules/logs/log.routes';
 
 const app = express();
@@ -33,7 +32,6 @@ app.use('/staff', staffRoutes);
 app.use('/patients', patientRoutes);
 app.use('/appointments', appointmentRoutes);
 app.use('/treatments', treatmentRoutes);
-app.use('/billing', billingRoutes);
 app.use('/logs', logRoutes);
 
 // ── Global Error Handler (must be last) ───────────────────────────────────────

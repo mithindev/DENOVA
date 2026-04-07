@@ -5,7 +5,6 @@ import {
   Users, 
   Calendar, 
   Stethoscope, 
-  ReceiptIndianRupee, 
   Settings,
   LogOut,
   ChevronDown,
@@ -30,7 +29,6 @@ const navItems = [
   },
   { name: 'Appointments', path: '/appointments', icon: Calendar },
   { name: 'Treatments', path: '/treatments', icon: Stethoscope },
-  { name: 'Billing', path: '/billing', icon: ReceiptIndianRupee },
   { name: 'Staff', path: '/staff', icon: Settings, adminOnly: true },
 ];
 

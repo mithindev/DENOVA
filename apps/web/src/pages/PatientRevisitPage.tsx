@@ -101,6 +101,31 @@ export const PatientRevisitPage: React.FC = () => {
     editMeasures.weight !== (selectedPatient.currentWeight?.toString() || '') ||
     editMeasures.height !== (selectedPatient.height?.toString() || '')
   );
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmitRevisit = async () => {
+    if (!selectedPatient) return;
+    setIsSubmitting(true);
+    try {
+      // Create a "WAITING" appointment for today
+      await api.post('/appointments', {
+        patientId: selectedPatient.id,
+        doctorId: null, // User can assign later in appointments page
+        date: new Date().toISOString(),
+        status: 'WAITING',
+        reason: 'Revisit Checklist',
+        duration: 30
+      });
+      alert('Patient added to appointment list (Waiting)');
+      navigate('/appointments');
+    } catch (err) {
+      console.error('Failed to submit revisit', err);
+      alert('Failed to add patient to appointments list');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -175,8 +200,12 @@ export const PatientRevisitPage: React.FC = () => {
                     Save Changes
                   </button>
                 )}
-                <button className="flex-1 md:flex-none px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-bold shadow-md shadow-primary/20 hover:opacity-90 transition-all">
-                  Submit
+                <button 
+                  onClick={handleSubmitRevisit}
+                  disabled={isSubmitting}
+                  className="flex-1 md:flex-none px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-bold shadow-md shadow-primary/20 hover:opacity-90 transition-all disabled:opacity-50"
+                >
+                  {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : 'Submit'}
                 </button>
               </div>
             </div>

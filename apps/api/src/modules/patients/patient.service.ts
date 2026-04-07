@@ -37,7 +37,7 @@ export class PatientService {
       include: {
         appointments: {
           orderBy: { date: 'desc' },
-          include: { treatments: true, billing: true },
+          include: { treatments: true },
         },
       },
     });

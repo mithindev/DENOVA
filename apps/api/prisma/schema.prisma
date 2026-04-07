@@ -18,16 +18,11 @@ enum Role {
 }
 
 enum AppointmentStatus {
+  WAITING
   SCHEDULED
   COMPLETED
   CANCELLED
   NO_SHOW
-}
-
-enum BillingStatus {
-  UNPAID
-  PARTIAL
-  PAID
 }
 
 enum Gender {
@@ -145,8 +140,14 @@ model Appointment {
   status       AppointmentStatus @default(SCHEDULED)
   reason       String?
   notes        String?
+
+  // Clinical notes (saved alongside treatments)
+  allergies        String?
+  clinicalDetails  String?   @map("clinical_details")
+  appointmentNotes String?   @map("appointment_notes")
+
   treatments   Treatment[]
-  billing      Billing?
+  prescriptions Prescription[]
   createdAt    DateTime          @default(now()) @map("created_at")
   updatedAt    DateTime          @updatedAt @map("updated_at")
 
@@ -160,30 +161,37 @@ model Treatment {
   appointmentId String      @map("appointment_id")
   appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
   name          String      // e.g. Root Canal, Scaling, Filling, Extraction
-  toothNumber   String?     @map("tooth_number") // e.g. "16", "UL1"
-  cost          Decimal     @db.Decimal(10, 2)
+  toothNumber   String?     @map("tooth_number") // e.g. "16", "UL1" (kept for backward compat)
   notes         String?
+
+  // Extended clinical fields
+  diagnosis     String?
+  treatmentDone String?   @map("treatment_done")
+  quadrantRU    String?   @map("quadrant_ru") // Right Upper
+  quadrantLU    String?   @map("quadrant_lu") // Left Upper
+  quadrantRL    String?   @map("quadrant_rl") // Right Lower
+  quadrantLL    String?   @map("quadrant_ll") // Left Lower
+
   createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
 
   @@map("treatments")
 }
 
-// ─── Billing ──────────────────────────────────────────────────────────────────
+// ─── Prescriptions ────────────────────────────────────────────────────────────
 
-model Billing {
-  id            String        @id @default(cuid())
-  appointmentId String        @unique @map("appointment_id")
-  appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-  totalAmount   Decimal       @db.Decimal(10, 2) @map("total_amount")
-  paidAmount    Decimal       @default(0) @db.Decimal(10, 2) @map("paid_amount")
-  discount      Decimal       @default(0) @db.Decimal(10, 2)
-  status        BillingStatus @default(UNPAID)
-  paymentMethod String?       @map("payment_method") // cash, card, upi
-  notes         String?
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
+model Prescription {
+  id            String      @id @default(cuid())
+  appointmentId String      @map("appointment_id")
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  medicineName  String      @map("medicine_name")
+  totalTablets  Int         @map("total_tablets")
+  dosage        String
+  days          Int
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
 
-  @@map("billing")
+  @@map("prescriptions")
 }
 
 model SystemLog {

@@ -4,13 +4,12 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
-import { PatientsPage } from './pages/PatientsPage';
 import { PatientRegistrationPage } from './pages/PatientRegistrationPage';
 import { PatientRevisitPage } from './pages/PatientRevisitPage';
 import { PatientListPage } from './pages/PatientListPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
-import { BillingPage } from './pages/BillingPage';
 import { StaffManagementPage } from './pages/StaffManagementPage';
+import { TreatmentsPage } from './pages/TreatmentsPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -41,7 +40,7 @@ const App: React.FC = () => (
         <Route path="/patients/revisit" element={<ProtectedRoute><PatientRevisitPage /></ProtectedRoute>} />
         <Route path="/patients/list" element={<ProtectedRoute><PatientListPage /></ProtectedRoute>} />
         <Route path="/appointments" element={<ProtectedRoute><AppointmentsPage /></ProtectedRoute>} />
-        <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+        <Route path="/appointments/:id/treatments" element={<ProtectedRoute><TreatmentsPage /></ProtectedRoute>} />
         <Route path="/staff" element={<AdminRoute><StaffManagementPage /></AdminRoute>} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -12,7 +12,7 @@ export class TreatmentService {
   static async create(data: any, clinicId: string) {
     const appt = await prisma.appointment.findFirst({ where: { id: data.appointmentId, patient: { clinicId } } });
     if (!appt) throw new AppError('Appointment not found in this clinic.', 404);
-    return prisma.treatment.create({ data: { ...data, cost: data.cost.toString() } });
+    return prisma.treatment.create({ data: { ...data } });
   }
 
   static async update(id: string, data: any, clinicId: string) {
@@ -25,7 +25,7 @@ export class TreatmentService {
     }
     return prisma.treatment.update({
       where: { id },
-      data: { ...data, ...(data.cost && { cost: data.cost.toString() }) },
+      data: { ...data },
     });
   }
 
