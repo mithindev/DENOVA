@@ -1,0 +1,198 @@
+// This is your Prisma schema file for Dental Hospital Management System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  DOCTOR
+  STAFF
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum BillingStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+// ─── Clinic (Multi-tenancy root) ──────────────────────────────────────────────
+
+model Clinic {
+  id           String        @id @default(cuid())
+  name         String
+  address      String?
+  phone        String?
+  email        String?       @unique
+  logoUrl      String?       @map("logo_url")
+  staff        Staff[]
+  patients     Patient[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@map("clinics")
+}
+
+// ─── Staff / Users ────────────────────────────────────────────────────────────
+
+model Staff {
+  id           String        @id @default(cuid())
+  clinicId     String        @map("clinic_id")
+  clinic       Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  name         String
+  username     String        @unique
+  email        String        @unique
+  password     String
+  role         Role          @default(STAFF)
+  phone        String
+  speciality   String?       // e.g. "Orthodontist", "Endodontist" (relevant for DOCTOR)
+  appointments Appointment[]
+  
+  // Relations for patients
+  doctorPatients     Patient[] @relation("DoctorPatients")
+  registeredPatients Patient[] @relation("RegisteredPatients")
+
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@map("staff")
+}
+
+// ─── Patients ─────────────────────────────────────────────────────────────────
+
+model Patient {
+  id           String        @id @default(cuid())
+  clinicId     String        @map("clinic_id")
+  clinic       Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  opNo         String?       @map("op_no")
+  name         String
+  phone        String?
+  mobile       String?
+  email        String?
+  dateOfBirth  DateTime?     @map("date_of_birth")
+  age          Int?
+  gender       Gender?
+  bloodGroup   String?       @map("blood_group")
+  
+  // Weights and measures
+  birthWeight    Decimal?    @map("birth_weight") @db.Decimal(5, 2)
+  currentWeight  Decimal?    @map("current_weight") @db.Decimal(5, 2)
+  height         Decimal?    @db.Decimal(5, 2)
+
+  // Family details
+  fathersName    String?     @map("fathers_name")
+  mothersName    String?     @map("mothers_name")
+  fatherOccupation String?   @map("father_occupation")
+  motherOccupation String?   @map("mother_occupation")
+
+  // Address
+  address      String?       // Kept for backward compatibility
+  address1     String?       @map("address_1")
+  address2     String?       @map("address_2")
+  address3     String?       @map("address_3")
+
+  // Registration info
+  regDate      DateTime      @default(now()) @map("reg_date")
+  doctorId     String?       @map("doctor_id")
+  doctor       Staff?        @relation("DoctorPatients", fields: [doctorId], references: [id], onDelete: SetNull)
+  registeredById String?     @map("registered_by_id")
+  registeredBy   Staff?      @relation("RegisteredPatients", fields: [registeredById], references: [id], onDelete: SetNull)
+
+  // Fees
+  regFee       Decimal?      @map("reg_fee") @db.Decimal(10, 2)
+  consulFee    Decimal?      @map("consul_fee") @db.Decimal(10, 2)
+  otherFee     Decimal?      @map("other_fee") @db.Decimal(10, 2)
+
+  allergies    String?
+  medicalNotes String?       @map("medical_notes")
+  appointments Appointment[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@map("patients")
+}
+
+// ─── Appointments ─────────────────────────────────────────────────────────────
+
+model Appointment {
+  id           String            @id @default(cuid())
+  patientId    String            @map("patient_id")
+  patient      Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId     String?           @map("doctor_id")
+  doctor       Staff?            @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  date         DateTime
+  duration     Int               @default(30) // minutes
+  status       AppointmentStatus @default(SCHEDULED)
+  reason       String?
+  notes        String?
+  treatments   Treatment[]
+  billing      Billing?
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  @@map("appointments")
+}
+
+// ─── Treatments ───────────────────────────────────────────────────────────────
+
+model Treatment {
+  id            String      @id @default(cuid())
+  appointmentId String      @map("appointment_id")
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  name          String      // e.g. Root Canal, Scaling, Filling, Extraction
+  toothNumber   String?     @map("tooth_number") // e.g. "16", "UL1"
+  cost          Decimal     @db.Decimal(10, 2)
+  notes         String?
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@map("treatments")
+}
+
+// ─── Billing ──────────────────────────────────────────────────────────────────
+
+model Billing {
+  id            String        @id @default(cuid())
+  appointmentId String        @unique @map("appointment_id")
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  totalAmount   Decimal       @db.Decimal(10, 2) @map("total_amount")
+  paidAmount    Decimal       @default(0) @db.Decimal(10, 2) @map("paid_amount")
+  discount      Decimal       @default(0) @db.Decimal(10, 2)
+  status        BillingStatus @default(UNPAID)
+  paymentMethod String?       @map("payment_method") // cash, card, upi
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@map("billing")
+}
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String   // 'ERROR', 'WARN', 'INFO'
+  message   String
+  stack     String?
+  context   Json?    // Stores { userId, url, method, body, ip }
+  createdAt DateTime @default(now())
+
+  @@map("system_logs")
+}

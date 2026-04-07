@@ -1,0 +1,44 @@
+import 'express-async-errors';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { env } from './config/env';
+import { errorHandler } from './middlewares/errorHandler';
+
+import authRoutes from './modules/auth/auth.routes';
+import staffRoutes from './modules/staff/staff.routes';
+import patientRoutes from './modules/patients/patient.routes';
+import appointmentRoutes from './modules/appointments/appointment.routes';
+import treatmentRoutes from './modules/treatments/treatment.routes';
+import billingRoutes from './modules/billing/billing.routes';
+import logRoutes from './modules/logs/log.routes';
+
+const app = express();
+
+// ── Security ──────────────────────────────────────────────────────────────────
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+
+// ── Rate Limiting ─────────────────────────────────────────────────────────────
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
+
+// ── Health ────────────────────────────────────────────────────────────────────
+app.get('/health', (_req, res) => res.json({ status: 'ok', system: 'Dental HMS', env: env.NODE_ENV }));
+
+// ── Routes ────────────────────────────────────────────────────────────────────
+app.use('/auth', authRoutes);
+app.use('/staff', staffRoutes);
+app.use('/patients', patientRoutes);
+app.use('/appointments', appointmentRoutes);
+app.use('/treatments', treatmentRoutes);
+app.use('/billing', billingRoutes);
+app.use('/logs', logRoutes);
+
+// ── Global Error Handler (must be last) ───────────────────────────────────────
+app.use(errorHandler);
+
+app.listen(env.PORT, () => {
+  console.log(`🦷 Dental HMS API [${env.NODE_ENV}] running on http://localhost:${env.PORT}`);
+});

@@ -1,0 +1,22 @@
+{
+  "name": "dental-hms",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm run dev --workspace=@dental/api",
+    "dev:web": "npm run dev --workspace=@dental/web",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "prisma:generate": "npm run prisma:generate --workspace=@dental/api",
+    "prisma:migrate": "npm run prisma:migrate --workspace=@dental/api",
+    "prisma:seed": "npm run prisma:seed --workspace=@dental/api"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  }
+}
