@@ -8,6 +8,13 @@ export const getNextOpNo = async (req: Request, res: Response) => {
   res.json({ opNo });
 };
 
+export const getPatientByOp = async (req: Request, res: Response) => {
+  if (!req.user) throw new AppError('Unauthorized', 401);
+  const patient = await PatientService.getByOpNo(req.params.opNo, req.user.clinicId);
+  if (!patient) return res.status(404).json({ message: 'Patient not found' });
+  res.json(patient);
+};
+
 export const listPatients = async (req: Request, res: Response) => {
   if (!req.user) throw new AppError('Unauthorized', 401);
   

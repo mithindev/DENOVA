@@ -8,6 +8,8 @@ export const PatientRegistrationPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
   const [doctors, setDoctors] = useState<any[]>([]);
   const initialFormData = {
     opNo: '',
@@ -34,6 +36,8 @@ export const PatientRegistrationPage: React.FC = () => {
 
   const resetForm = () => {
     setFormData(initialFormData);
+    setIsEditing(false);
+    setEditingPatientId(null);
   };
 
   useEffect(() => {
@@ -68,6 +72,66 @@ export const PatientRegistrationPage: React.FC = () => {
       age--;
     }
     return age >= 0 ? age.toString() : '';
+  };
+
+  const handleOpKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const opNo = formData.opNo.trim();
+      if (!opNo) return;
+
+      setLoading(true);
+      try {
+        const res = await api.get(`/patients/by-op/${opNo}`);
+        const patient = res.data;
+        
+        if (patient) {
+          // Format DOB from ISO to DD-MM-YYYY
+          let formattedDob = '';
+          if (patient.dateOfBirth) {
+            const d = new Date(patient.dateOfBirth);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            formattedDob = `${day}-${month}-${year}`;
+          }
+
+          setFormData({
+            opNo: patient.opNo || '',
+            name: patient.name || '',
+            phone: patient.phone || '',
+            mobile: patient.mobile || '',
+            email: patient.email || '',
+            dateOfBirth: formattedDob,
+            age: patient.age?.toString() || calculateAge(formattedDob),
+            gender: patient.gender || 'MALE',
+            bloodGroup: patient.bloodGroup || '',
+            currentWeight: patient.currentWeight?.toString() || '',
+            height: patient.height?.toString() || '',
+            fathersName: patient.fathersName || '',
+            address1: patient.address1 || '',
+            address2: patient.address2 || '',
+            address3: patient.address3 || '',
+            doctorId: patient.doctorId || '',
+            allergies: patient.allergies || '',
+            medicalNotes: patient.medicalNotes || '',
+          });
+          setIsEditing(true);
+          setEditingPatientId(patient.id);
+        }
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          // If not found, we just stay in registration mode with that OP number
+          // This is fine, maybe it's a new patient with a specific OP number
+          console.log('Patient not found with OP No:', opNo);
+        } else {
+          console.error('Failed to fetch patient by OP No', err);
+          alert('Error searching for patient. Please try again.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -120,29 +184,31 @@ export const PatientRegistrationPage: React.FC = () => {
         }
       });
 
-      const res = await api.post('/patients', submissionData);
-      const newPatient = res.data;
+      if (isEditing && editingPatientId) {
+        await api.patch(`/patients/${editingPatientId}`, submissionData);
+      } else {
+        const res = await api.post('/patients', submissionData);
+        const newPatient = res.data;
 
-      // Create a "WAITING" appointment for today
-      try {
-        await api.post('/appointments', {
-          patientId: newPatient.id,
-          doctorId: submissionData.doctorId,
-          date: new Date().toISOString(),
-          status: 'WAITING',
-          reason: 'Initial Visit',
-          duration: 30
-        });
-      } catch (apptErr) {
-        console.error('Failed to create initial appointment', apptErr);
-        // We don't want to block the whole flow if appointment creation fails,
-        // but it's good to know.
+        // Create a "WAITING" appointment for today ONLY for new patients
+        try {
+          await api.post('/appointments', {
+            patientId: newPatient.id,
+            doctorId: submissionData.doctorId,
+            date: new Date().toISOString(),
+            status: 'WAITING',
+            reason: 'Initial Visit',
+            duration: 30
+          });
+        } catch (apptErr) {
+          console.error('Failed to create initial appointment', apptErr);
+        }
       }
 
       navigate('/appointments');
     } catch (err) {
-      console.error('Registration failed', err);
-      alert('Failed to register patient. Please check the form and try again.');
+      console.error('Registration/Update failed', err);
+      alert(`Failed to ${isEditing ? 'update' : 'register'} patient. Please check the form and try again.`);
     } finally {
       setLoading(false);
     }
@@ -159,8 +225,12 @@ export const PatientRegistrationPage: React.FC = () => {
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-2xl font-heading font-black text-foreground tracking-tight">Patient Registration</h1>
-            <p className="text-muted-foreground text-[10px] font-medium uppercase tracking-[0.15em]">New Medical Record</p>
+            <h1 className="text-2xl font-heading font-black text-foreground tracking-tight">
+              {isEditing ? 'Update Patient Record' : 'Patient Registration'}
+            </h1>
+            <p className="text-muted-foreground text-[10px] font-medium uppercase tracking-[0.15em]">
+              {isEditing ? `Editing OP: ${formData.opNo}` : 'New Medical Record'}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -187,7 +257,7 @@ export const PatientRegistrationPage: React.FC = () => {
             className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2 rounded-lg text-xs font-bold hover:opacity-90 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
           >
             {loading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-            Save Registration
+            {isEditing ? 'Update Details' : 'Save Registration'}
           </button>
         </div>
       </div>
@@ -195,7 +265,7 @@ export const PatientRegistrationPage: React.FC = () => {
       <form id="registration-form" onSubmit={handleSubmit} className="flex-1 min-h-0">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-full">
           {/* Column 1: Personal info */}
-          <section className="bg-card border rounded-xl p-4 shadow-sm space-y-4 flex flex-col">
+          <section className="bg-card border rounded-xl p-6 shadow-sm space-y-4 flex flex-col min-h-[500px]">
             <div className="flex items-center gap-2 border-b pb-2 shrink-0">
               <div className="p-1.5 bg-primary/10 rounded-md">
                 <UserPlus size={16} className="text-primary" />
@@ -204,6 +274,22 @@ export const PatientRegistrationPage: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+              <div className="sm:col-span-2 space-y-1">
+                <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">OP Number</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="opNo"
+                    value={formData.opNo}
+                    onChange={handleChange}
+                    onKeyDown={handleOpKeyDown}
+                    placeholder="Enter OP Number & press Enter"
+                    className="w-full px-3 py-1.5 border rounded-lg bg-background text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all pr-12"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-muted text-[8px] font-bold border text-muted-foreground uppercase opacity-50">Enter ↵</div>
+                </div>
+              </div>
+
               <div className="sm:col-span-2 space-y-1">
                 <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Full Name *</label>
                 <input
@@ -270,23 +356,11 @@ export const PatientRegistrationPage: React.FC = () => {
                   ))}
                 </select>
               </div>
-
-              <div className="sm:col-span-2 space-y-1 pt-1">
-                <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">OP Number</label>
-                <input
-                  type="text"
-                  name="opNo"
-                  value={formData.opNo}
-                  onChange={handleChange}
-                  placeholder="Enter OP Number (or leave for auto)"
-                  className="w-full px-3 py-1.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                />
-              </div>
             </div>
           </section>
 
           {/* Column 2: Contact info */}
-          <section className="bg-card border rounded-xl p-4 shadow-sm space-y-4 flex flex-col">
+          <section className="bg-card border rounded-xl p-6 shadow-sm space-y-4 flex flex-col min-h-[500px]">
             <div className="flex items-center gap-2 border-b pb-2 shrink-0">
               <div className="p-1.5 bg-primary/10 rounded-md">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
@@ -362,7 +436,7 @@ export const PatientRegistrationPage: React.FC = () => {
           {/* Column 3: Vitals & Notes */}
           <div className="space-y-4 flex flex-col h-full overflow-hidden">
             {/* Vitals */}
-            <section className="bg-card border rounded-xl p-4 shadow-sm space-y-4 shrink-0">
+            <section className="bg-card border rounded-xl p-6 shadow-sm space-y-4 shrink-0 min-h-[180px]">
               <div className="flex items-center gap-2 border-b pb-2">
                 <div className="p-1.5 bg-primary/10 rounded-md">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>

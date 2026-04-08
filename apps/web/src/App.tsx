@@ -7,6 +7,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { PatientRegistrationPage } from './pages/PatientRegistrationPage';
 import { PatientRevisitPage } from './pages/PatientRevisitPage';
 import { PatientListPage } from './pages/PatientListPage';
+import { PatientProfilePage } from './pages/PatientProfilePage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
 import { StaffManagementPage } from './pages/StaffManagementPage';
 import { TreatmentsPage } from './pages/TreatmentsPage';
@@ -39,6 +40,7 @@ const App: React.FC = () => (
         <Route path="/patients/registration" element={<ProtectedRoute><PatientRegistrationPage /></ProtectedRoute>} />
         <Route path="/patients/revisit" element={<ProtectedRoute><PatientRevisitPage /></ProtectedRoute>} />
         <Route path="/patients/list" element={<ProtectedRoute><PatientListPage /></ProtectedRoute>} />
+        <Route path="/patients/:id" element={<ProtectedRoute><PatientProfilePage /></ProtectedRoute>} />
         <Route path="/appointments" element={<ProtectedRoute><AppointmentsPage /></ProtectedRoute>} />
         <Route path="/appointments/:id/treatments" element={<ProtectedRoute><TreatmentsPage /></ProtectedRoute>} />
         <Route path="/staff" element={<AdminRoute><StaffManagementPage /></AdminRoute>} />

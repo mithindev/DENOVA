@@ -14,6 +14,7 @@ import treatmentRoutes from './modules/treatments/treatment.routes';
 import logRoutes from './modules/logs/log.routes';
 import imagingRoutes from './modules/imaging/imaging.routes';
 import { WatcherService } from './modules/imaging/watcher.service';
+import { schedulerService } from './services/scheduler.service';
 
 const app = express();
 
@@ -45,4 +46,5 @@ app.listen(env.PORT, () => {
   
   // Initialize Background Services
   WatcherService.init();
+  schedulerService.init();
 });

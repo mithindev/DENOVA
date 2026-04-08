@@ -8,6 +8,14 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   IMAGE_WATCH_PATH: z.string().optional(),
   MAX_IMAGE_SIZE_MB: z.string().default('10'),
+  
+  // Email Configuration
+  EMAIL_HOST: z.string().default('smtp.gmail.com'),
+  EMAIL_PORT: z.string().default('587'),
+  EMAIL_USER: z.string().optional(),
+  EMAIL_PASS: z.string().optional(),
+  EMAIL_FROM: z.string().default('Dental HMS <no-reply@dentalhms.com>'),
+  REPORT_RECIPIENT: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);

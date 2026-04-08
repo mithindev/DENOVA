@@ -42,12 +42,33 @@ export class PatientService {
       include: {
         appointments: {
           orderBy: { date: 'desc' },
-          include: { treatments: true },
+          include: { 
+            treatments: true,
+            prescriptions: true,
+            doctor: { select: { name: true, speciality: true } }
+          },
         },
+        imagingRecords: {
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            fileName: true,
+            mimeType: true,
+            fileSize: true,
+            createdAt: true
+          }
+        }
       },
     });
 
     if (!patient) throw new AppError('Patient not found.', 404);
+    return patient;
+  }
+
+  static async getByOpNo(opNo: string, clinicId: string) {
+    const patient = await prisma.patient.findFirst({
+      where: { opNo, clinicId }
+    });
     return patient;
   }
 
