@@ -7,6 +7,7 @@ import api from '../api/api.client';
 import { PatientCard } from '../components/treatments/PatientCard';
 import { DiagnosisTreatmentSection, TreatmentRow } from '../components/treatments/DiagnosisTreatmentSection';
 import { ClinicalNotesSection } from '../components/treatments/ClinicalNotesSection';
+import { ImagingSection } from '../components/treatments/ImagingSection';
 import { MedicinalAdviceSection, PrescriptionRow } from '../components/treatments/MedicinalAdviceSection';
 import { VisitingHistorySection, HistoryItem } from '../components/treatments/VisitingHistorySection';
 
@@ -236,6 +237,11 @@ export const TreatmentsPage: React.FC = () => {
           onRemove={idx => setStagedTreatments(p => p.filter((_, i) => i !== idx))}
           onClearAll={() => setStagedTreatments([])}
         />
+
+        {/* 1.5. Imaging & X-Rays */}
+        {appointment.patientId && (
+          <ImagingSection patientId={appointment.patientId} />
+        )}
 
         {/* 2. Clinical Notes */}
         <ClinicalNotesSection 

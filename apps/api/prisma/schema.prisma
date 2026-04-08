@@ -121,6 +121,7 @@ model Patient {
   allergies    String?
   medicalNotes String?       @map("medical_notes")
   appointments Appointment[]
+  imagingRecords ImagingRecord[]
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
@@ -203,4 +204,19 @@ model SystemLog {
   createdAt DateTime @default(now())
 
   @@map("system_logs")
+}
+
+model ImagingRecord {
+  id          String   @id @default(cuid())
+  patientId   String   @map("patient_id")
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  fileName    String   @map("file_name")
+  mimeType    String   @map("mime_type")
+  imageData   Bytes    @map("image_data") // BYTEA
+  fileSize    Int      @map("file_size")
+  hash        String   @unique // SHA-256 for deduplication
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([patientId])
+  @@map("imaging_records")
 }
