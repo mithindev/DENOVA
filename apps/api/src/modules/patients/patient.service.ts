@@ -4,7 +4,7 @@ import { AppError } from '../../lib/AppError';
 export class PatientService {
   static async getNextOpNo(clinicId: string) {
     const count = await prisma.patient.count({ where: { clinicId } });
-    return `OP-${(count + 1).toString().padStart(4, '0')}`;
+    return (count + 1).toString();
   }
 
   static async getAll(clinicId: string, query?: string, limit: number = 15) {
@@ -13,7 +13,7 @@ export class PatientService {
     if (query) {
       const orConditions: any[] = [
         { name: { contains: query, mode: 'insensitive' } },
-        { opNo: { contains: query, mode: 'insensitive' } },
+        { opNo: { startsWith: query, mode: 'insensitive' } },
       ];
       
       // Only include phone in search if it looks like a phone number (digits) and is 7+ chars
@@ -28,7 +28,7 @@ export class PatientService {
 
     return prisma.patient.findMany({
       where,
-      orderBy: { regDate: 'desc' },
+      orderBy: query ? { opNo: 'asc' } : { regDate: 'desc' },
       take: limit,
       include: {
         _count: { select: { appointments: true } },
@@ -55,7 +55,7 @@ export class PatientService {
     // If opNo is not provided, generate it automatically based on patient count
     if (!data.opNo) {
       const count = await prisma.patient.count({ where: { clinicId } });
-      data.opNo = `OP-${(count + 1).toString().padStart(4, '0')}`;
+      data.opNo = (count + 1).toString();
     }
 
     const patientData = {
