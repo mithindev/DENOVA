@@ -11,8 +11,12 @@ import {
   ClipboardList, 
   ShieldAlert,
   Clock,
-  ArrowRight
+  ArrowRight,
+  Download,
+  MessageCircle,
+  Loader2
 } from 'lucide-react';
+import { downloadPrescriptionPDF, sharePrescriptionWhatsApp } from '../../utils/prescription.util';
 
 export interface HistoryItem {
   id: string;
@@ -44,19 +48,65 @@ export interface HistoryItem {
 
 interface Props {
   history: HistoryItem[];
+  patient: {
+    name: string;
+    age?: number | string | null;
+    gender?: string | null;
+    opNo?: string | null;
+    mobile?: string | null;
+    phone?: string | null;
+  };
   currentAppointmentId: string;
   loading: boolean;
 }
 
-export const VisitingHistorySection: React.FC<Props> = ({ history, currentAppointmentId, loading }) => {
+export const VisitingHistorySection: React.FC<Props> = ({ history, patient, currentAppointmentId, loading }) => {
   const [selectedVisit, setSelectedVisit] = useState<HistoryItem | null>(null);
   const [openSection, setOpenSection] = useState<string | null>('procedures');
+  const [actionLoading, setActionLoading] = useState<'pdf' | 'whatsapp' | null>(null);
+
+  const handleDownloadPDF = async (visit: HistoryItem) => {
+    setActionLoading('pdf');
+    try {
+      await downloadPrescriptionPDF({
+        patient: {
+          ...patient,
+          opNo: visit.opNo || patient.opNo
+        },
+        appointment: visit
+      });
+    } catch (err) {
+      console.error('Failed to download PDF', err);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleWhatsApp = async (visit: HistoryItem) => {
+    setActionLoading('whatsapp');
+    try {
+      await sharePrescriptionWhatsApp({
+        patient: {
+          ...patient,
+          opNo: visit.opNo || patient.opNo
+        },
+        appointment: visit
+      });
+    } catch (err) {
+      console.error('Failed to share via WhatsApp', err);
+      alert('Failed to prepare WhatsApp share. Please check clipboard permissions.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   if (loading) return <div className="h-40 animate-pulse bg-slate-50 rounded-xl mt-8 border border-slate-200"></div>;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b border-slate-200 pb-4 mt-10">
+        {/* ... (rest of the header is unchanged) */}
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg">
             <History size={20} />
@@ -277,9 +327,30 @@ export const VisitingHistorySection: React.FC<Props> = ({ history, currentAppoin
                       onClick={() => setOpenSection(openSection === 'meds' ? null : 'meds')}
                       className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${openSection === 'meds' ? 'bg-slate-50 border-b border-slate-200' : 'bg-white hover:bg-slate-50/50'}`}
                     >
-                      <div className="flex items-center gap-3">
-                        <Pill size={18} className="text-blue-600" />
-                        <span className="text-sm font-bold text-slate-900 tracking-tight">Medicinal Prescriptions</span>
+                      <div className="flex items-center justify-between flex-1 pr-4">
+                        <div className="flex items-center gap-3">
+                          <Pill size={18} className="text-blue-600" />
+                          <span className="text-sm font-bold text-slate-900 tracking-tight">Medicinal Prescriptions</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                           <button 
+                             onClick={(e) => { e.stopPropagation(); handleDownloadPDF(selectedVisit); }}
+                             disabled={actionLoading !== null}
+                             className="p-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-all border border-slate-200 disabled:opacity-50"
+                             title="Download PDF"
+                           >
+                             {actionLoading === 'pdf' ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                           </button>
+                           <button 
+                             onClick={(e) => { e.stopPropagation(); handleWhatsApp(selectedVisit); }}
+                             disabled={actionLoading !== null}
+                             className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-all border border-emerald-100 disabled:opacity-50"
+                             title="Share via WhatsApp"
+                           >
+                             {actionLoading === 'whatsapp' ? <Loader2 size={14} className="animate-spin" /> : <MessageCircle size={14} />}
+                           </button>
+                        </div>
                       </div>
                       {openSection === 'meds' ? <ChevronDown size={18} className="text-slate-400" /> : <ChevronRight size={18} className="text-slate-400" />}
                     </button>
@@ -325,10 +396,10 @@ export const VisitingHistorySection: React.FC<Props> = ({ history, currentAppoin
              </div>
 
              {/* Footer Action */}
-             <div className="p-8 bg-white border-t border-slate-200 flex flex-col items-center gap-4">
+             <div className="p-8 bg-white border-t border-slate-200">
                 <button 
                   onClick={() => setSelectedVisit(null)}
-                  className="w-full py-4 bg-slate-900 text-white rounded-xl text-[13px] font-bold shadow-lg hover:bg-slate-800 transition-all flex items-center justify-center gap-2 uppercase tracking-widest"
+                  className="w-full py-4 bg-slate-900 text-white rounded-xl text-[11px] font-black shadow-lg hover:bg-slate-800 transition-all flex items-center justify-center gap-2 uppercase tracking-[0.2em]"
                 >
                   Close Record Review
                 </button>

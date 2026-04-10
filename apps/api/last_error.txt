@@ -1,0 +1,28 @@
+[
+  {
+    "id": "cmnpp23h3000012jg9gj7l0jh",
+    "level": "CLIENT_ERROR",
+    "message": "Cannot read properties of null (reading 'useState')",
+    "stack": "TypeError: Cannot read properties of null (reading 'useState')\n    at useState (http://localhost:3010/node_modules/.vite/deps/chunk-PZHMDCWN.js?v=4e635b85:1066:29)\n    at AuthProvider (http://localhost:3010/src/context/AuthContext.tsx:23:27)\n    at renderWithHooks (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=b901a83b:11548:26)\n    at mountIndeterminateComponent (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=b901a83b:14926:21)\n    at beginWork (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=b901a83b:15914:22)\n    at beginWork$1 (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=b901a83b:19753:22)\n    at performUnitOfWork (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=b901a83b:19198:20)\n    at workLoopSync (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=b901a83b:19137:13)\n    at renderRootSync (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=b901a83b:19116:15)\n    at recoverFromConcurrentError (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=b901a83b:18736:28)",
+    "context": {
+      "ip": "::1",
+      "url": "http://localhost:3010/patients/cmnpjjoq70001eecvc715frtv",
+      "userId": "cmnoclsi90002gjo8clgeqbap",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+    },
+    "createdAt": "2026-04-08T06:55:46.424Z"
+  },
+  {
+    "id": "cmnplm5ty0000rn1g7ig9vsgh",
+    "level": "CLIENT_ERROR",
+    "message": "PatientProfilePage is not defined",
+    "stack": "ReferenceError: PatientProfilePage is not defined\n    at App (http://localhost:3010/src/App.tsx?t=1775625563705:146:141)\n    at renderWithHooks (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=2b9fa6dd:11548:26)\n    at updateFunctionComponent (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=2b9fa6dd:14582:28)\n    at beginWork (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=2b9fa6dd:15924:22)\n    at beginWork$1 (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=2b9fa6dd:19753:22)\n    at performUnitOfWork (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=2b9fa6dd:19198:20)\n    at workLoopSync (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=2b9fa6dd:19137:13)\n    at renderRootSync (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=2b9fa6dd:19116:15)\n    at recoverFromConcurrentError (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=2b9fa6dd:18736:28)\n    at performSyncWorkOnRoot (http://localhost:3010/node_modules/.vite/deps/chunk-WNHV52DQ.js?v=2b9fa6dd:18879:28)",
+    "context": {
+      "ip": "::1",
+      "url": "http://localhost:3010/appointments",
+      "userId": "cmnoclsi90002gjo8clgeqbap",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+    },
+    "createdAt": "2026-04-08T05:19:24.167Z"
+  }
+]

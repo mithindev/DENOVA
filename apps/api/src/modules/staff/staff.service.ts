@@ -21,8 +21,13 @@ export class StaffService {
   }
 
   static async create(data: any, clinicId: string) {
-    const existing = await prisma.staff.findUnique({ where: { username: data.username } });
-    if (existing) throw new AppError('Username already taken.', 400);
+    const [existingUser, existingEmail] = await Promise.all([
+      prisma.staff.findUnique({ where: { username: data.username } }),
+      prisma.staff.findUnique({ where: { email: data.email } }),
+    ]);
+
+    if (existingUser) throw new AppError('Username already taken.', 400);
+    if (existingEmail) throw new AppError('Email address already registered.', 400);
 
     const hashedPassword = await hashPassword(data.password);
     return prisma.staff.create({

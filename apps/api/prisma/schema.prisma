@@ -220,3 +220,12 @@ model ImagingRecord {
   @@index([patientId])
   @@map("imaging_records")
 }
+
+model Medicine {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("medicines")
+}

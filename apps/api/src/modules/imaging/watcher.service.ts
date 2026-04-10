@@ -46,12 +46,16 @@ export class WatcherService {
     
     // 1. Check if it's an image
     if (!['.jpg', '.jpeg', '.png'].includes(ext)) {
-      console.log(`ℹ️ Skipping non-image file: ${fileName}`);
       return;
     }
 
-    // 2. Extract OP Number (Assume filename starts with OP Number, e.g., "1234.png" or "1234_xray.jpg")
-    // Regulation: EzDent usually exports as "OP_NO.jpg"
+    // 1b. Skip already processed files (those with our timestamp pattern)
+    // pattern: OP_NO-YYYY-MM-DD...
+    if (fileName.includes('-202') && fileName.includes('T')) {
+      return;
+    }
+
+    // 2. Extract OP Number
     const opNoMatch = fileName.match(/^([a-zA-Z0-9]+)/);
     if (!opNoMatch) {
       console.warn(`⚠️ Could not extract OP Number from filename: ${fileName}`);
@@ -59,18 +63,21 @@ export class WatcherService {
     }
 
     const opNo = opNoMatch[1];
-    console.log(`📸 New image detected for OP: ${opNo} (${fileName})`);
 
     try {
       const buffer = fs.readFileSync(filePath);
       const mimeType = (lookup as any).lookup(filePath) || 'image/jpeg';
 
       // 3. Ingest into DB
-      await ImagingService.ingestImage(opNo, buffer, fileName, mimeType);
+      const result = await ImagingService.ingestImage(opNo, buffer, fileName, mimeType);
       
-      console.log(`✅ Successfully ingested: ${fileName}`);
+      if (result.isNew) {
+        console.log(`✅ Successfully ingested: ${fileName}`);
+      } else {
+        console.log(`ℹ️ Duplicate detected for ${fileName}. Skipping database entry.`);
+      }
 
-      // 4. Rename original file to prevent re-processing and as requested
+      // 4. Rename original file to prevent re-processing
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const newFileName = `${opNo}-${timestamp}${ext}`;
       const newPath = path.join(path.dirname(filePath), newFileName);
@@ -80,9 +87,6 @@ export class WatcherService {
 
     } catch (error: any) {
       console.error(`❌ Failed to process ${fileName}: ${error.message}`);
-      
-      // If it failed because it already exists or patient not found, move to an "errors" folder?
-      // For now, just log it. The user said "Log failures... do NOT crash".
     }
   }
 

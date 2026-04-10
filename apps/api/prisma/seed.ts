@@ -6,11 +6,11 @@ async function main() {
 
   // 1. Create a Primary Clinic
   const clinic = await prisma.clinic.upsert({
-    where: { email: 'admin@balajidental.com' },
+    where: { email: 'admin@sriganeshdental.com' },
     update: {},
     create: {
-      name: 'Balaji Dental Care',
-      email: 'admin@balajidental.com',
+      name: 'Sri Ganesh Dental Care',
+      email: 'admin@sriganeshdental.com',
       address: '123 Medical Square, North City',
       phone: '+91-9988776655',
     },
@@ -24,7 +24,7 @@ async function main() {
     create: {
       name: 'Dr. Mithin Raj',
       username: 'admin',
-      email: 'dr.mithin@balajidental.com',
+      email: 'dr.mithin@sriganeshdental.com',
       phone: '+91-9988776655',
       password: adminPassword,
       role: 'ADMIN',
@@ -54,6 +54,32 @@ async function main() {
     });
     console.log('✅ Sample patients created.');
   }
+
+  // 4. Seed Medicines
+  const medicines = [
+    'MEDOMOL', 'DOLOFORCE', 'INEMAC', 'CALSAT', 'ZARNAC-SP', 'NOMCLOX', 
+    'CLEDOMOX 375', 'CLEDOMOX 625', 'EROXDISTAB', 'EMCLOX', 'TABLO-OZ', 
+    'ZINETAC', 'UNICLOT', 'ALNAC-SP', 'DOLOCARE', 'CANEFOPLUS', 'HEFENPLUS', 
+    'Z', 'DICFENPLUS', 'EXTRAMMUNE', 'AVIL', 'RIBOFLAVINE', 'BOTROPASE', 
+    'GLY(250 MG)', 'GLY(500 MG)', 'GUMTONE', 'SENSODENT KF', 'OLSEPT(M.WASH)', 
+    'FIXON', 'CLINSODENT', 'BRUSH', 'SENSOFORM (G.P)', 'DENSOFORM(G.P)', 
+    'ORAHELP GEL', 'ORNIGREAT GEL', 'ARNAK-P', 'MOXCIKIND CV-625', 
+    'EROX CV-625', 'POINT', 'DIVION PLUS', 'LYDASE', 'MOXBIT', 'EROX CV 375', 
+    'ENERGION-OD', 'SAY CAL', 'EDOMOX C', 'SAY FLAM SP', 'ZENAC PLUS', 
+    'DOLOKIND PLUS', 'MOXCIKIND CV 375', 'DICLO SAN S', 'AMOXREL', 'FEPARED', 
+    'DENTO GEL', 'DENTA FORCE', 'THERMOKIND GEL', 'MEDOMOL(300)', 'ZIOMOX', 
+    'RABLUX 20', 'ERONAC', 'CLOFENAC SP', 'NEBUMOX', 'MULTIDASE', 'SERCLO', 
+    'AMOXYREL', 'ZENAC SP', 'BARCLAV', 'BARCLAV 375', 'ZIOCLAV 375'
+  ];
+
+  for (const m of medicines) {
+    await (prisma as any).medicine.upsert({
+      where: { name: m },
+      update: {},
+      create: { name: m }
+    });
+  }
+  console.log(`✅ Seeded ${medicines.length} medicines.`);
 
   console.log('✅ Seed complete.');
 }

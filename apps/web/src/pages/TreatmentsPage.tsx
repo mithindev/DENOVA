@@ -10,6 +10,7 @@ import { ClinicalNotesSection } from '../components/treatments/ClinicalNotesSect
 import { ImagingSection } from '../components/treatments/ImagingSection';
 import { MedicinalAdviceSection, PrescriptionRow } from '../components/treatments/MedicinalAdviceSection';
 import { VisitingHistorySection, HistoryItem } from '../components/treatments/VisitingHistorySection';
+import { downloadPrescriptionPDF } from '../utils/prescription.util';
 
 export const TreatmentsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -99,77 +100,21 @@ export const TreatmentsPage: React.FC = () => {
     }
   };
 
-  const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const content = `
-      <html>
-        <head>
-          <title>Prescription - ${appointment.patient?.name}</title>
-          <style>
-            body { font-family: sans-serif; padding: 40px; color: #333; }
-            .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
-            .clinic-name { font-size: 24px; font-weight: bold; text-transform: uppercase; }
-            .patient-info { display: flex; justify-content: space-between; margin-bottom: 40px; font-size: 14px; }
-            table { w-full; border-collapse: collapse; margin-top: 20px; }
-            th { text-align: left; border-bottom: 1px solid #ddd; padding: 10px; font-size: 12px; text-transform: uppercase; }
-            td { padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
-            .footer { margin-top: 100px; text-align: right; border-top: 1px solid #ddd; padding-top: 20px; }
-            @media print { .no-print { display: none; } }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="clinic-name">DENOVA DENTAL CLINIC</div>
-            <div>Advanced Oral Care & Implant Centre</div>
-            <div style="font-size: 12px; margin-top: 5px;">Contact: +91 9876543210 | Email: care@denova.com</div>
-          </div>
-          
-          <div class="patient-info">
-            <div>
-              <strong>PATIENT:</strong> ${appointment.patient?.name}<br>
-              <strong>AGE/GENDER:</strong> ${appointment.patient?.age}/${appointment.patient?.gender}<br>
-              <strong>OP NO:</strong> ${appointment.patient?.opNo || 'WALK-IN'}
-            </div>
-            <div style="text-align: right">
-              <strong>DATE:</strong> ${new Date().toLocaleDateString()}<br>
-              <strong>DOCTOR:</strong> ${appointment.doctor?.name || 'In-house Consultant'}
-            </div>
-          </div>
-
-          <h3 style="text-transform: uppercase; border-left: 4px solid #000; padding-left: 10px;">Prescription</h3>
-          <table style="width: 100%">
-            <thead>
-              <tr>
-                <th>Medicine</th>
-                <th style="text-align: center">Qty</th>
-                <th>Dosage</th>
-                <th style="text-align: center">Days</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${prescriptions.map(p => `
-                <tr>
-                  <td><strong>${p.medicineName}</strong></td>
-                  <td style="text-align: center">${p.totalTablets}</td>
-                  <td>${p.dosage}</td>
-                  <td style="text-align: center">${p.days}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-
-          <div class="footer">
-            <br><br>
-            <strong>Authorized Signature</strong>
-          </div>
-          <script>window.print();</script>
-        </body>
-      </html>
-    `;
-    printWindow.document.write(content);
-    printWindow.document.close();
+  const handlePrint = async () => {
+    if (!appointment) return;
+    
+    try {
+      await downloadPrescriptionPDF({
+        patient: appointment.patient,
+        appointment: {
+          ...appointment,
+          prescriptions: prescriptions.filter(p => p.medicineName.trim() !== '')
+        }
+      });
+    } catch (err) {
+      console.error('Failed to generate prescription PDF', err);
+      alert('Failed to generate PDF. Please try again.');
+    }
   };
 
   if (loading) {
@@ -268,6 +213,7 @@ export const TreatmentsPage: React.FC = () => {
         {/* 4. Visiting History */}
         <VisitingHistorySection 
           history={history}
+          patient={appointment.patient}
           currentAppointmentId={id || ''}
           loading={historyLoading}
         />

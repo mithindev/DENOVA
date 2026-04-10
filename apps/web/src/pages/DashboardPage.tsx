@@ -29,13 +29,8 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [pRes, aRes] = await Promise.all([
-          api.get('/patients'),
-          api.get('/appointments'),
-        ]);
-        const today = new Date().toDateString();
-        const todayAppts = aRes.data.filter((a: any) => new Date(a.date).toDateString() === today);
-        setStats({ patients: pRes.data.length, todayAppointments: todayAppts.length });
+        const { data } = await api.get('/dashboard/stats');
+        setStats(data);
       } catch (err) { /* non-critical */ }
     };
     fetchStats();
@@ -45,7 +40,7 @@ export const DashboardPage: React.FC = () => {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-heading font-bold text-foreground">
-          Good morning, {user?.name?.split(' ')[0]} 👋
+          Good morning, Dr. {user?.name?.startsWith('Dr.') ? user?.name : user?.name?.split(' ')[0]} 👋
         </h1>
         <p className="text-muted-foreground mt-1">Here's what's happening at your clinic today.</p>
       </div>

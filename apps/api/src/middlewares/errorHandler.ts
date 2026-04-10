@@ -9,8 +9,16 @@ export const errorHandler = async (
   res: Response,
   next: NextFunction
 ) => {
-  const statusCode = error instanceof AppError ? error.statusCode : 500;
+  let statusCode = error instanceof AppError ? error.statusCode : 500;
+  let message = error instanceof AppError ? error.message : 'Something went wrong on the server.';
   const isTrusted = error instanceof AppError;
+
+  // Handle Prisma Specific Errors
+  if (error.code === 'P2002') {
+    statusCode = 400;
+    const target = (error.meta?.target as string[])?.join(', ') || 'field';
+    message = `Unique constraint failed on ${target}. This value is already in use.`;
+  }
 
   // Context for logging
   const context = {
@@ -48,7 +56,7 @@ export const errorHandler = async (
 
   return res.status(statusCode).json({
     status: 'error',
-    message: isTrusted ? error.message : 'Something went wrong on the server.',
+    message,
     ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
   });
 };

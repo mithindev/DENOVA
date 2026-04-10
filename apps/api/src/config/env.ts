@@ -9,13 +9,10 @@ const envSchema = z.object({
   IMAGE_WATCH_PATH: z.string().optional(),
   MAX_IMAGE_SIZE_MB: z.string().default('10'),
   
-  // Email Configuration
-  EMAIL_HOST: z.string().default('smtp.gmail.com'),
-  EMAIL_PORT: z.string().default('587'),
-  EMAIL_USER: z.string().optional(),
-  EMAIL_PASS: z.string().optional(),
-  EMAIL_FROM: z.string().default('Dental HMS <no-reply@dentalhms.com>'),
-  REPORT_RECIPIENT: z.string().optional(),
+  // Email Configuration (Resend)
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().default('Dental HMS <onboarding@resend.dev>'),
+  REPORT_RECIPIENT: z.string().default('mithindev1@gmail.com'),
 });
 
 const _env = envSchema.safeParse(process.env);

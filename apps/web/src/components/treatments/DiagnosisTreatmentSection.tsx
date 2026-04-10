@@ -75,7 +75,7 @@ export const DiagnosisTreatmentSection: React.FC<Props> = ({ stagedTreatments, o
         <div className="p-5 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wider ml-1">Diagnosis</label>
+              <label className="text-[12px] font-bold text-slate-950 uppercase tracking-wider ml-1">Diagnosis</label>
               <textarea
                 rows={2}
                 value={formData.diagnosis}
@@ -85,7 +85,7 @@ export const DiagnosisTreatmentSection: React.FC<Props> = ({ stagedTreatments, o
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wider ml-1">Treatment Done</label>
+              <label className="text-[12px] font-bold text-slate-950 uppercase tracking-wider ml-1">Treatment Done</label>
               <textarea
                 rows={2}
                 value={formData.treatmentDone}
@@ -97,7 +97,7 @@ export const DiagnosisTreatmentSection: React.FC<Props> = ({ stagedTreatments, o
           </div>
 
           <div className="space-y-3">
-            <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wider ml-1">Anatomical Mapping (Quadrants)</label>
+            <label className="text-[12px] font-bold text-slate-950 uppercase tracking-wider ml-1">Anatomical Mapping (Quadrants)</label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { id: 'quadrantRU', label: 'RU (Right Upper)' },

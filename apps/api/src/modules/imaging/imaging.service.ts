@@ -32,7 +32,7 @@ export class ImagingService {
     });
 
     if (existing) {
-      throw new Error(`Duplicate image detected (Hash: ${hash.substring(0, 8)}...). Skipping.`);
+      return { record: existing, isNew: false };
     }
 
     // 4. Compress Image if needed
@@ -45,7 +45,7 @@ export class ImagingService {
     }
 
     // 5. Save to Database
-    return prisma.imagingRecord.create({
+    const record = await prisma.imagingRecord.create({
       data: {
         patientId: patient.id,
         fileName: originalName,
@@ -55,6 +55,8 @@ export class ImagingService {
         hash
       }
     });
+
+    return { record, isNew: true };
   }
 
   /**
